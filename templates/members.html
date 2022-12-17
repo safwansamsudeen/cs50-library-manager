@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Members</title>
+  </head>
+  <body>
+    <form action="/members" method="post">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" />
+
+      <label for="joined">Joined</label>
+      <input type="date" id="joined" name="joined" />
+
+      <label for="debt">Debt</label>
+      <input type="text" id="debt" name="debt" /><span>₹</span>
+      <input name="type" value="create" hidden />
+      <input type="submit" value="Add" />
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Joined</th>
+          <th>Debt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td><input type="text" value="{{member.name}}" name="name" /></td>
+          <td><input type="date" value="{{member.joined}}" name="joined" /></td>
+          <td><input type="text" value="{{member.debt}}" name="debt" /></td>
+          <td>
+            <button class="delete-button">❌</button>
+          </td>
+          <td>
+            <input name="id" value="{{member.id}}" hidden />
+            <input name="type" value="update" hidden />
+            <button class="confirm-button">Confirm</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+  <script>
+    document.querySelectorAll(".delete-button").forEach((btn) => {
+      btn.onclick = () => {
+        btn.parentElement.parentElement
+          .querySelector("input[name=type]")
+          .setAttribute("value", "delete");
+        btn.parentElement.parentElement.querySelector(
+          ".confirm-button"
+        ).textContent = "Delete";
+      };
+    });
+    document.querySelectorAll(".confirm-button").forEach((btn) => {
+      btn.onclick = () => {
+        let id = btn.parentElement.querySelector("input[name=id]").value;
+        let type = btn.parentElement.querySelector("input[name=type]").value;
+        if (type === "update") {
+          let name =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=name]"
+            ).value;
+          let joined =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=joined]"
+            ).value;
+          let debt =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=debt]"
+            ).value;
+          fetch("/members", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id, name, joined, debt, type }),
+          }).catch((res) => {
+            alert("There was an error, please check console");
+            console.log(res);
+          });
+        } else if (type === "delete") {
+          fetch("/members", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
+          location.reload();
+        }
+      };
+    });
+  </script>
+</html>
