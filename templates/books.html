@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Books</title>
+  </head>
+  <body>
+    <form action="/books" method="post">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" />
+
+      <label for="author">Author</label>
+      <input type="text" id="author" name="author" />
+
+      <label for="price">Price</label>
+      <input type="text" id="price" name="price" /><span>₹</span>
+      <input name="type" value="create" hidden />
+      <input type="submit" value="Add" />
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Author</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td><input type="text" value="{{book.name}}" name="name" /></td>
+          <td><input type="text" value="{{book.author}}" name="author" /></td>
+          <td><input type="text" value="{{book.price}}" name="price" /></td>
+          <td>
+            <button class="delete-button">❌</button>
+          </td>
+          <td>
+            <input name="id" value="{{book.id}}" hidden />
+            <input name="type" value="update" hidden />
+            <button class="confirm-button">Confirm</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+  <script>
+    document.querySelectorAll(".delete-button").forEach((btn) => {
+      btn.onclick = () => {
+        console.log(btn.parentElement.nextSibling.nextSibling);
+      };
+    });
+    document.querySelectorAll(".confirm-button").forEach((btn) => {
+      btn.onclick = () => {
+        let id = btn.parentElement.querySelector("input[name=id]").value;
+        let type = btn.parentElement.querySelector("input[name=type]").value;
+        if (type === "update") {
+          let name =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=name]"
+            ).value;
+          let author =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=author]"
+            ).value;
+          let price =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=price]"
+            ).value;
+          console.log(name, author, price);
+          fetch("/books", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id, name, author, price, type }),
+          }).catch((res) => {
+            alert("There was an error, please check console");
+            console.log(res);
+          });
+        } else if (type === "delete") {
+          fetch("/books", { method: "POST", body: { id } });
+        }
+      };
+    });
+  </script>
+</html>
