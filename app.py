@@ -14,13 +14,11 @@ def index():
 @app.route('/books', methods=['GET', 'POST', 'DELETE'])
 def books():
     if request.method == 'POST':
+        type = request.form.get("type") or request.json["type"]
         name = request.form.get("name") or request.json["name"]
         author = request.form.get("author") or request.json["author"]
         price = request.form.get("price") or request.json["price"]
-        type = request.form.get("type") or request.json["type"]
-        print(name, author, price)
         if type == "create":
-            print('hey')
             db.execute(
                 "INSERT INTO books (name, author, price ) VALUES (?, ?, ?);", name, author, price)
         elif type == "update":
@@ -28,6 +26,11 @@ def books():
             db.execute(
                 "UPDATE books SET name = ?, author = ?, price = ? WHERE id = ?;", name, author, price, id)
         return redirect('/books')
-    else:
+    elif request.method == 'GET':
         books = db.execute("SELECT * FROM books;")
         return render_template('books.html', books=books)
+    elif request.method == 'DELETE':
+        id = request.form.get('id') or request.json["id"]
+        db.execute(
+            "DELETE FROM books WHERE id = ?;", id)
+        return redirect('/books')

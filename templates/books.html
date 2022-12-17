@@ -49,7 +49,12 @@
   <script>
     document.querySelectorAll(".delete-button").forEach((btn) => {
       btn.onclick = () => {
-        console.log(btn.parentElement.nextSibling.nextSibling);
+        btn.parentElement.parentElement
+          .querySelector("input[name=type]")
+          .setAttribute("value", "delete");
+        btn.parentElement.parentElement.querySelector(
+          ".confirm-button"
+        ).textContent = "Delete";
       };
     });
     document.querySelectorAll(".confirm-button").forEach((btn) => {
@@ -69,7 +74,6 @@
             btn.parentElement.parentElement.querySelector(
               "input[name=price]"
             ).value;
-          console.log(name, author, price);
           fetch("/books", {
             method: "POST",
             headers: {
@@ -81,7 +85,14 @@
             console.log(res);
           });
         } else if (type === "delete") {
-          fetch("/books", { method: "POST", body: { id } });
+          fetch("/books", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
+          location.reload();
         }
       };
     });
