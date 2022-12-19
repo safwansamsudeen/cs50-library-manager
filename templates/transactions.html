@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Transactions</title>
+  </head>
+  <body>
+    <form action="/transactions" method="post">
+      <label for="member_select">Member</label>
+      <select id="member_select" name="member_select">
+        {% for member in members %}
+        <option value="{{member.id}}">{{member.name}}</option>
+        {% endfor %}
+      </select>
+
+      <label for="book_select">Book</label>
+      <select id="book_select" name="book_select">
+        {% for book in books %}
+        <option value="{{book.id}}">{{book.name}}</option>
+        {% endfor %}
+      </select>
+
+      <label for="trans_date">Author</label>
+      <input type="date" id="trans_date" name="trans_date" />
+
+      <label for="trans_type">Type</label>
+      <select id="trans_type" name="trans_type">
+        <option value="borrow">Borrow</option>
+        <option value="return">Return</option>
+      </select>
+
+      <input name="type" value="create" hidden />
+      <input type="submit" value="Add" />
+    </form>
+    <table>
+      <thead>
+        <tr>
+          <th>Book</th>
+          <th>Member</th>
+          <th>Date</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td>
+            <select name="member_select">
+              {% for member in members %}
+              <option value="{{member.id}}" {% if t.member_id == member.id %} selected {% endif %}>{{member.name}}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select name="book_select">
+              {% for book in books %}
+              <option value="{{book.id}}" {% if t.book_id == book.id %} selected {% endif %}>{{book.name}}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="date" value="{{t.trans_date}}" name="trans_date" /></td>
+          <td>
+              <select id="trans_type" name="trans_type">
+              <option value="borrow" {% if t.type == "borrow" %} selected {% endif %}>Borrow</option>
+              <option value="return" {% if t.type == "return" %} selected {% endif %}>Return</option>
+            </select>
+          </td>
+          <td>
+            <button class="delete-button">❌</button>
+          </td>
+          <td>
+            <input name="id" value="{{t.id}}" hidden />
+            <input name="type" value="update" hidden />
+            <button class="confirm-button">Confirm</button>
+          </td>
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+  <script>
+    document.querySelectorAll(".delete-button").forEach((btn) => {
+      btn.onclick = () => {
+        btn.parentElement.parentElement
+          .querySelector("input[name=type]")
+          .setAttribute("value", "delete");
+        btn.parentElement.parentElement.querySelector(
+          ".confirm-button"
+        ).textContent = "Delete";
+      };
+    });
+    document.querySelectorAll(".confirm-button").forEach((btn) => {
+      btn.onclick = () => {
+        let id = btn.parentElement.querySelector("input[name=id]").value;
+        let type = btn.parentElement.querySelector("input[name=type]").value;
+        if (type === "update") {
+          let member_select =
+            btn.parentElement.parentElement.querySelector(
+              "select[name=member_select]"
+            ).value;
+          let book_select =
+            btn.parentElement.parentElement.querySelector(
+              "select[name=book_select]"
+            ).value;
+          let trans_date =
+            btn.parentElement.parentElement.querySelector(
+              "input[name=trans_date]"
+            ).value;
+          let trans_type =
+            btn.parentElement.parentElement.querySelector(
+              "select[name=trans_type]"
+            ).value;
+          fetch("/transactions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id, member_select, book_select, trans_date, trans_type, type }),
+          }).catch((res) => {
+            alert("There was an error, please check console");
+            console.log(res);
+          });
+        } else if (type === "delete") {
+          fetch("/transactions", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id }),
+          });
+          location.reload()
+          ;
+        }
+      };
+    });
+  </script>
+</html>
