@@ -13,22 +13,28 @@ def index():
 
 @app.route('/books', methods=['GET', 'POST', 'DELETE'])
 def books():
+    fields_types = {"title": "text", "authors": "text", "isbn": "text", "publisher": "text",
+                    "num_pages": "number", "fee": "number", "copies_bought": "number", "copies_available": "number"}
+    fields = list(fields_types.keys())
     if request.method == 'POST':
+        data = {}
         type = request.form.get("type") or request.json["type"]
-        name = request.form.get("name") or request.json["name"]
-        author = request.form.get("author") or request.json["author"]
-        price = request.form.get("price") or request.json["price"]
+        for field in fields:
+            data[field] = request.form.get(field) or request.json[field]
+
         if type == "create":
+            print(
+                f"INSERT INTO books ({', '.join(fields)}) VALUES ({', '.join(list('?' * len(fields)))});")
             db.execute(
-                "INSERT INTO books (name, author, price ) VALUES (?, ?, ?);", name, author, price)
+                f"INSERT INTO books ({', '.join(fields)}) VALUES ({', '.join(list('?' * len(fields)))});", *data.values())
         elif type == "update":
             id = request.form.get('id') or request.json["id"]
             db.execute(
-                "UPDATE books SET name = ?, author = ?, price = ? WHERE id = ?;", name, author, price, id)
+                f"UPDATE books SET {' = ?, '.join(fields)}= ? WHERE id = ?;", *data.values(), id)
         return redirect('/books')
     elif request.method == 'GET':
         books = db.execute("SELECT * FROM books;")
-        return render_template('books.html', books=books)
+        return render_template('books.html', books=books, fields_types=fields_types)
     elif request.method == 'DELETE':
         id = request.form.get('id') or request.json["id"]
         db.execute(

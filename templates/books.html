@@ -8,31 +8,30 @@
   </head>
   <body>
     <form action="/books" method="post">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" />
+      {% for f, t in fields_types.items() %}
+      <label for="{{f}}">{{f | capitalize | replace("_", " ") }}:</label>
+      <input type="{{t}}" id="{{f}}" name="{{f}}" />
+      <br />
+      {% endfor %}
 
-      <label for="author">Author</label>
-      <input type="text" id="author" name="author" />
-
-      <label for="price">Price</label>
-      <input type="text" id="price" name="price" /><span>₹</span>
       <input name="type" value="create" hidden />
       <input type="submit" value="Add" />
     </form>
     <table>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Author</th>
-          <th>Price</th>
+          {% for f in fields_types.keys() %}
+          <th>{{f| capitalize | replace("_", " ")}}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
         {% for book in books %}
         <tr>
-          <td><input type="text" value="{{book.name}}" name="name" /></td>
-          <td><input type="text" value="{{book.author}}" name="author" /></td>
-          <td><input type="text" value="{{book.price}}" name="price" /></td>
+          {% for f, t in fields_types.items() %}
+          <td><input type="{{t}}" value="{{book[f]}}" name="{{f}}" /></td>
+          <br />
+          {% endfor %}
           <td>
             <button class="delete-button">❌</button>
           </td>
@@ -62,24 +61,20 @@
         let id = btn.parentElement.querySelector("input[name=id]").value;
         let type = btn.parentElement.querySelector("input[name=type]").value;
         if (type === "update") {
-          let name =
+          data = {}
+          {% for f in fields_types.keys()%}
+          data.{{f}} =
             btn.parentElement.parentElement.querySelector(
-              "input[name=name]"
+              "input[name={{f}}]"
             ).value;
-          let author =
-            btn.parentElement.parentElement.querySelector(
-              "input[name=author]"
-            ).value;
-          let price =
-            btn.parentElement.parentElement.querySelector(
-              "input[name=price]"
-            ).value;
+          {% endfor %}
+          data.type = type
           fetch("/books", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: id, name, author, price, type }),
+            body: JSON.stringify({...data, id}),
           }).catch((res) => {
             alert("There was an error, please check console");
             console.log(res);
