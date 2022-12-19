@@ -63,8 +63,8 @@
           <td><input type="date" value="{{t.trans_date}}" name="trans_date" /></td>
           <td>
               <select id="trans_type" name="trans_type">
-              <option value="borrow" {% if t.type == "borrow" %} selected {% endif %}>Borrow</option>
-              <option value="return" {% if t.type == "return" %} selected {% endif %}>Return</option>
+              <option value="borrow" {% if t.trans_type == "borrow" %} selected {% endif %}>Borrow</option>
+              <option value="return" {% if t.trans_type == "return" %} selected {% endif %}>Return</option>
             </select>
           </td>
           <td>
