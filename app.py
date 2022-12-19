@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-db = SQL("sqlite:///books.db")
+db = SQL("sqlite:///library.db")
 
 
 @app.route('/')
@@ -91,3 +91,7 @@ def transactions():
         db.execute(
             "DELETE FROM transactions WHERE id = ?;", id)
         return redirect('/transactions')
+
+
+if __name__ == "__main__":
+    app.run(port=8000, debug=True)
