@@ -46,16 +46,15 @@ def books():
 def members():
     if request.method == 'POST':
         type = request.form.get("type") or request.json["type"]
-        name = request.form.get("name") or request.json["name"]
+        full_name = request.form.get("full_name") or request.json["full_name"]
         joined = request.form.get("joined") or request.json["joined"]
-        debt = request.form.get("debt") or request.json["debt"]
         if type == "create":
             db.execute(
-                "INSERT INTO members (name, joined, debt ) VALUES (?, ?, ?);", name, joined, debt)
+                "INSERT INTO members (full_name, joined, cash_left) VALUES (?, ?, ?);", full_name, joined, 500)
         elif type == "update":
             id = request.form.get('id') or request.json["id"]
             db.execute(
-                "UPDATE members SET name = ?, joined = ?, debt = ? WHERE id = ?;", name, joined, debt, id)
+                "UPDATE members SET full_name = ?, joined = ? WHERE id = ?;", full_name, joined, id)
         return redirect('/members')
     elif request.method == 'GET':
         members = db.execute("SELECT * FROM members;")
@@ -69,16 +68,30 @@ def members():
 
 @app.route('/transactions', methods=['GET', 'POST', 'DELETE'])
 def transactions():
+    members = db.execute("SELECT * FROM members;")
+    books = db.execute("SELECT * FROM books;")
+
     if request.method == 'POST':
         type = request.form.get("type") or request.json["type"]
-        member_id = request.form.get(
-            "member_select") or request.json["member_select"]
-        book_id = request.form.get(
-            "book_select") or request.json["book_select"]
+        member_id = int(request.form.get(
+            "member_select") or request.json["member_select"])
+        book_id = int(request.form.get(
+            "book_select") or request.json["book_select"])
         trans_date = request.form.get(
             "trans_date") or request.json["trans_date"]
         trans_type = request.form.get(
             "trans_type") or request.json["trans_type"]
+
+        book = list(filter(lambda m: m['id'] == book_id, books))[0]
+        member = list(filter(lambda m: m['id'] == member_id, members))[0]
+
+        if trans_type == "borrow":
+            cash_left = member["cash_left"] - book["fee"]
+        else:
+            cash_left = member["cash_left"] + book["fee"]
+        if cash_left < 0:
+            return redirect("/transactions")
+
         if type == "create":
             db.execute("INSERT INTO transactions (book_id, member_id, trans_date, trans_type) VALUES (?, ?, ?, ?);",
                        book_id, member_id, trans_date, trans_type)
@@ -86,10 +99,10 @@ def transactions():
             id = request.form.get('id') or request.json["id"]
             db.execute(
                 "UPDATE transactions SET book_id = ?, member_id = ?, trans_date = ?, trans_type = ? WHERE id = ?;", book_id, member_id, trans_date, trans_type, id)
+        db.execute("UPDATE members SET cash_left = ? WHERE id = ?",
+                   cash_left, member_id)
         return redirect('/transactions')
     elif request.method == 'GET':
-        members = db.execute("SELECT * FROM members;")
-        books = db.execute("SELECT * FROM books;")
         transactions = db.execute("SELECT * FROM transactions;")
         return render_template('transactions.html', members=members, books=books, transactions=transactions)
     elif request.method == 'DELETE':
@@ -97,7 +110,3 @@ def transactions():
         db.execute(
             "DELETE FROM transactions WHERE id = ?;", id)
         return redirect('/transactions')
-
-
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
