@@ -31,7 +31,6 @@
         <option value="return">Return</option>
       </select>
 
-      <input name="type" value="create" hidden />
       <input type="submit" value="Add" />
     </form>
     <table>
@@ -47,35 +46,25 @@
         {% for t in transactions %}
         <tr>
           <td>
-            <select name="member_select">
-              {% for member in members %}
-              <option value="{{member.id}}" {% if t.member_id == member.id %} selected {% endif %}>{{member.full_name}}</option>
-              {% endfor %}
-            </select>
+            {% for member in members %} {% if t.member_id == member.id %}
+            {{member.full_name}} {% endif %} {% endfor %}
           </td>
           <td>
-            <select name="book_select">
-              {% for book in books %}
-              <option value="{{book.id}}" {% if t.book_id == book.id %} selected {% endif %}>{{book.title}}</option>
-              {% endfor %}
-            </select>
+            {% for book in books %} {% if t.book_id == book.id %}
+            <!-- prettier-ignore -->
+            {{ book.title}} {% endif %} {% endfor %}
           </td>
-          <td><input type="date" value="{{t.trans_date}}" name="trans_date" /></td>
-          <td>
-              <select id="trans_type" name="trans_type">
-              <option value="borrow" {% if t.trans_type == "borrow" %} selected {% endif %}>Borrow</option>
-              <option value="return" {% if t.trans_type == "return" %} selected {% endif %}>Return</option>
-            </select>
-          </td>
+          <td>{{t.trans_date}}</td>
+          <td>{{ t.trans_type | capitalize }}</td>
+
           <td>
             <button class="delete-button">❌</button>
           </td>
           <td>
             <input name="id" value="{{t.id}}" hidden />
-            <input name="type" value="update" hidden />
             <button class="confirm-button">Confirm</button>
           </td>
-      </tr>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -83,9 +72,6 @@
   <script>
     document.querySelectorAll(".delete-button").forEach((btn) => {
       btn.onclick = () => {
-        btn.parentElement.parentElement
-          .querySelector("input[name=type]")
-          .setAttribute("value", "delete");
         btn.parentElement.parentElement.querySelector(
           ".confirm-button"
         ).textContent = "Delete";
@@ -93,36 +79,8 @@
     });
     document.querySelectorAll(".confirm-button").forEach((btn) => {
       btn.onclick = () => {
-        let id = btn.parentElement.querySelector("input[name=id]").value;
-        let type = btn.parentElement.querySelector("input[name=type]").value;
-        if (type === "update") {
-          let member_select =
-            btn.parentElement.parentElement.querySelector(
-              "select[name=member_select]"
-            ).value;
-          let book_select =
-            btn.parentElement.parentElement.querySelector(
-              "select[name=book_select]"
-            ).value;
-          let trans_date =
-            btn.parentElement.parentElement.querySelector(
-              "input[name=trans_date]"
-            ).value;
-          let trans_type =
-            btn.parentElement.parentElement.querySelector(
-              "select[name=trans_type]"
-            ).value;
-          fetch("/transactions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id, member_select, book_select, trans_date, trans_type, type }),
-          }).catch((res) => {
-            alert("There was an error, please check console");
-            console.log(res);
-          });
-        } else if (type === "delete") {
+        if (btn.textContent === "Delete") {
+          let id = btn.parentElement.querySelector("input[name=id]").value;
           fetch("/transactions", {
             method: "DELETE",
             headers: {
@@ -130,8 +88,7 @@
             },
             body: JSON.stringify({ id }),
           });
-          location.reload()
-          ;
+          location.reload();
         }
       };
     });

@@ -8,7 +8,7 @@
   </head>
   <body>
     <form action="/books" method="post">
-      {% for f, t in fields_types.items() %}
+      {% for f, t in modifiable_fields.items() %}
       <label for="{{f}}">{{f | capitalize | replace("_", " ") }}:</label>
       <input type="{{t}}" id="{{f}}" name="{{f}}" />
       <br />
@@ -20,18 +20,20 @@
     <table>
       <thead>
         <tr>
-          {% for f in fields_types.keys() %}
-          <th>{{f| capitalize | replace("_", " ")}}</th>
+          {% for f in modifiable_fields.keys() %}
+          <th>{{f | capitalize | replace("_", " ")}}</th>
           {% endfor %}
+          <th>Copies available</th>
         </tr>
       </thead>
       <tbody>
         {% for book in books %}
         <tr>
-          {% for f, t in fields_types.items() %}
+          {% for f, t in modifiable_fields.items() %}
           <td><input type="{{t}}" value="{{book[f]}}" name="{{f}}" /></td>
           <br />
           {% endfor %}
+          <td>{{book["copies_available"]}}</td>
           <td>
             <button class="delete-button">❌</button>
           </td>
@@ -62,7 +64,7 @@
         let type = btn.parentElement.querySelector("input[name=type]").value;
         if (type === "update") {
           data = {}
-          {% for f in fields_types.keys()%}
+          {% for f in modifiable_fields.keys() %}
           data.{{f}} =
             btn.parentElement.parentElement.querySelector(
               "input[name={{f}}]"
