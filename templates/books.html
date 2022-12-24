@@ -113,8 +113,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ id }),
-          });
-          location.reload();
+          }).then(() => location.reload());
         }
       };
     });

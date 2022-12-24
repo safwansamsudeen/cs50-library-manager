@@ -37,7 +37,7 @@
           </select>
         </div>
         <div class="mb-3">
-          <label for="trans_date">Author</label>
+          <label for="trans_date">Date of Transaction:</label>
           <input
             class="form-control"
             type="date"
@@ -96,9 +96,10 @@
   <script>
     document.querySelectorAll(".delete-button").forEach((btn) => {
       btn.onclick = () => {
-        btn.parentElement.parentElement.querySelector(
-          ".confirm-button"
-        ).textContent = "Delete";
+        let confirmButton =
+          btn.parentElement.parentElement.querySelector(".confirm-button");
+        confirmButton.textContent = "Delete";
+        confirmButton.classList.replace("btn-dark", "btn-danger");
       };
     });
     document.querySelectorAll(".confirm-button").forEach((btn) => {
@@ -111,8 +112,7 @@
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ id }),
-          });
-          location.reload();
+          }).then(() => location.reload());
         }
       };
     });

@@ -134,8 +134,8 @@ def transactions():
             cash_left = member["cash_left"] + book["fee"]
             book_count = book["copies_available"] + 1
         else:
-            cash_left = member["cash_left"] + book["fee"]
-            book_count = book["copies_available"] + 1
+            cash_left = member["cash_left"] - book["fee"]
+            book_count = book["copies_available"] - 1
 
         db.execute("UPDATE members SET cash_left = ? WHERE id = ?",
                    cash_left, member_id)
